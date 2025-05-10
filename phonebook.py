@@ -1,10 +1,27 @@
 import json
 import os
+import re
 
 CONTACT_FILE = "contacts.json"
 
 
-def load_contacts():
+# Phone number formating using Regex: US style only
+def normalize_phone_number(raw_phone_number):
+    # Remove anything that's not a digit
+    digits = re.sub(r"[^\d]", "", raw_phone_number)
+
+    # Remove leading country code if it's +1 or 1
+    if digits.startswith("1") and len(digits) == 11:
+        digits = digits[1:]
+
+    if len(digits) == 10:
+        # Return in 123-456-7890 format
+        return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+    else:
+        return None
+
+
+def load_contacts():  # Load existing contacts from the json file
     if os.path.exists(CONTACT_FILE):
         with open(CONTACT_FILE, "r") as file:
             try:
@@ -23,7 +40,7 @@ def load_contacts():
 contact_list = load_contacts()
 
 
-def save_contacts():
+def save_contacts():  # Save contacts to Json file
     with open(CONTACT_FILE, "w") as file:
         json.dump(contact_list, file, indent=4)
     print("✅ Contacts saved to file.")
@@ -31,8 +48,14 @@ def save_contacts():
 
 def add_contact():
     name = input("\nWhat's your contact's name? ").lower()
-    phone_number = input(
-        "What's your contact's phone number? (format 000-000-0000) ")
+    while True:
+        raw_phone_number = input(
+            "What's your contact's phone number?: ").strip()
+        phone_number = normalize_phone_number(raw_phone_number)
+        if phone_number:
+            break
+        else:
+            print("❌ Invalid phone number. Please enter a valid US-style number.")
 
     # Prevent duplicate names
     if any(contact["name"] == name for contact in contact_list):
