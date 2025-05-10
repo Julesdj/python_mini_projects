@@ -8,7 +8,7 @@ options = {
 }
 
 while True:
-    print("What would you like to do today?")
+    print("\nWhat would you like to do today?")
     for key, value in options.items():
         print(f"{key}: {value}")
 
